@@ -17,6 +17,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const seedProducts = require('./seeder');
 
+const { getToastMessage } = require('./controllers/settingsController');
+
 dotenv.config();
 
 const app = express();
@@ -57,10 +59,18 @@ app.use((req, res, next) => {
     next();
 });
 
+app.get('/api/health', (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        message: "NEONTHREADS API is running",
+        timestamp: new Date().toISOString()
+    });
+});
+
 // Rate Limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 500, // Increased to 500 to allow smooth polling and app usage
     message: 'Too many requests from this IP, please try again after 15 minutes'
 });
 app.use('/api/', limiter);
@@ -105,13 +115,7 @@ app.use('/api/cart', cartRoutes);
 
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
-app.get('/api/health', (req, res) => {
-    res.status(200).json({
-        status: "ok",
-        message: "NEONTHREADS API is running",
-        timestamp: new Date().toISOString()
-    });
-});
+app.get('/api/toast-message', getToastMessage);
 
 app.get('/', (req, res) => {
     res.send('API is running...');

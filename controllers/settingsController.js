@@ -1,6 +1,7 @@
 const Settings = require('../models/settingsModel');
 const NotificationLog = require('../models/notificationLogModel');
 const twilio = require('twilio');
+const AppSettings = require('../models/appSettingsModel');
 
 const getSettings = async (req, res) => {
     let settings = await Settings.findOne();
@@ -63,4 +64,66 @@ const testWhatsappMessage = async (req, res) => {
     }
 };
 
-module.exports = { getSettings, updateSettings, getNotificationLogs, testWhatsappMessage };
+const getToastMessage = async (req, res) => {
+    let toast = await AppSettings.findOne({ key: 'homepage_toast' });
+    if (!toast) {
+        toast = await AppSettings.create({
+            key: 'homepage_toast',
+            value: {
+                active: true,
+                message: "Welcome to NEONTHREADS! Design your custom t-shirt today. Free delivery above ₹999! 🎉",
+                type: "info",
+                bg_color: "#1a1a1a",
+                accent_color: "#00ffff"
+            }
+        });
+    }
+    res.json(toast.value);
+};
+
+const getToastMessageSettings = async (req, res) => {
+    let toast = await AppSettings.findOne({ key: 'homepage_toast' });
+    if (!toast) {
+        toast = await AppSettings.create({
+            key: 'homepage_toast',
+            value: {
+                active: true,
+                message: "Welcome to NEONTHREADS! Design your custom t-shirt today. Free delivery above ₹999! 🎉",
+                type: "info",
+                bg_color: "#1a1a1a",
+                accent_color: "#00ffff"
+            }
+        });
+    }
+    res.json(toast.value);
+};
+
+const updateToastMessageSettings = async (req, res) => {
+    const { active, message, type, accent_color } = req.body;
+    let toast = await AppSettings.findOne({ key: 'homepage_toast' });
+    if (!toast) {
+        toast = new AppSettings({ key: 'homepage_toast', value: {} });
+    }
+
+    toast.value = {
+        active: active !== undefined ? active : (toast.value ? toast.value.active : true),
+        message: message !== undefined ? message : (toast.value ? toast.value.message : ""),
+        type: type || (toast.value ? toast.value.type : "info"),
+        bg_color: "#1a1a1a",
+        accent_color: accent_color || (toast.value ? toast.value.accent_color : "#00ffff")
+    };
+
+    toast.markModified('value');
+    await toast.save();
+    res.json(toast.value);
+};
+
+module.exports = {
+    getSettings,
+    updateSettings,
+    getNotificationLogs,
+    testWhatsappMessage,
+    getToastMessage,
+    getToastMessageSettings,
+    updateToastMessageSettings
+};
