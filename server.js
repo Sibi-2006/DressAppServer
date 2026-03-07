@@ -31,12 +31,12 @@ app.use(helmet({
 // CORS Setup
 const allowedOrigins = [
     process.env.FRONTEND_URL,
+    process.env.CLIENT_URL,
     'http://localhost:3000',
-    'http://127.0.0.1:3000',
     'http://localhost:5173',
     'https://dressappclient.onrender.com',
     'https://neonthreads-custom.vercel.app'
-];
+].filter(Boolean);
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -46,10 +46,15 @@ app.use(cors({
             origin.startsWith('http://172.') ||
             origin.startsWith('http://10.');
         if (isAllowed) callback(null, true);
-        else callback(new Error('Not allowed by CORS'));
+        else callback(new Error('Not allowed by CORS: ' + origin));
     },
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
+
+// Handle Preflight Requests
+app.options('*', cors());
 
 app.use(express.json());
 app.use(cookieParser());

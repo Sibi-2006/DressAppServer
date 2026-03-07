@@ -15,8 +15,8 @@ const setTokenCookie = (res, token, isAdmin = false) => {
 
     res.cookie(cookieName, token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+        secure: true, // Always true for cross-domain sameSite: none
+        sameSite: 'none', // Required for cross-domain cookies
         maxAge: expires
     });
 };
@@ -116,8 +116,8 @@ const logoutUser = async (req, res) => {
         }
     }
 
-    res.clearCookie('token', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax' });
-    res.clearCookie('adminToken', { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax' });
+    res.clearCookie('token', { httpOnly: true, secure: true, sameSite: 'none' });
+    res.clearCookie('adminToken', { httpOnly: true, secure: true, sameSite: 'none' });
     res.status(200).json({ message: 'Logged out successfully' });
 };
 
