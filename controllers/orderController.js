@@ -3,30 +3,109 @@ const { sendWhatsAppMessage } = require('../utils/whatsappService');
 const { generateOrderId, generateUPILink } = require('../utils/upiService');
 const { cloudinary } = require('../config/cloudinary');
 const axios = require('axios');
+const JSZip = require('jszip');
 
 // Proxy download for Cloudinary images (bypasses browser CORS)
-const proxyDownload = async (req, res) => {
+const downloadImageProxy = async (req, res) => {
     try {
         const { url, filename } = req.query;
-        if (!url) return res.status(400).json({ message: 'URL is required' });
+        if (!url) {
+            return res.status(400).json({ error: 'URL is required' });
+        }
 
+        // Fetch image from Cloudinary on SERVER side
         const response = await axios.get(url, {
-            responseType: 'arraybuffer'
+            responseType: 'arraybuffer',
+            timeout: 30000
         });
 
-        const contentType = response.headers['content-type'];
-        const fileNameToUse = filename || `design_${Date.now()}.png`;
+        const contentType = response.headers['content-type'] || 'image/jpeg';
+        const fileExt = url.split('.').pop().split('?')[0] || 'jpg';
 
         res.set({
             'Content-Type': contentType,
-            'Content-Disposition': `attachment; filename="${fileNameToUse}"`,
+            'Content-Disposition': `attachment; filename="${filename || 'design.' + fileExt}"`,
+            'Content-Length': response.data.length,
             'Access-Control-Allow-Origin': '*'
         });
 
-        res.send(response.data);
+        res.send(Buffer.from(response.data));
     } catch (error) {
-        console.error('Proxy download failed:', error);
-        res.status(500).json({ message: 'Failed to download image' });
+        console.error('Download proxy error:', error.message);
+        res.status(500).json({ error: 'Failed to download image' });
+    }
+};
+
+// Server-side ZIP generation for all designs in an order
+const downloadZip = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        const zip = new JSZip();
+        const designs = [];
+
+        // Collect all images from items
+        order.items.forEach((item, itemIdx) => {
+            if (item.front_images && item.front_images.length > 0) {
+                item.front_images.forEach((img, imgIdx) => {
+                    if (img.url) {
+                        designs.push({
+                            url: img.url,
+                            filename: `Item${itemIdx + 1}_Front_Design_${imgIdx + 1}.jpg`
+                        });
+                    }
+                });
+            }
+            if (item.back_images && item.back_images.length > 0) {
+                item.back_images.forEach((img, imgIdx) => {
+                    if (img.url) {
+                        designs.push({
+                            url: img.url,
+                            filename: `Item${itemIdx + 1}_Back_Design_${imgIdx + 1}.jpg`
+                        });
+                    }
+                });
+            }
+        });
+
+        if (designs.length === 0) {
+            return res.status(400).json({ error: 'No design images found' });
+        }
+
+        // Fetch each image server-side and add to ZIP
+        for (const design of designs) {
+            try {
+                const response = await axios.get(design.url, {
+                    responseType: 'arraybuffer',
+                    timeout: 30000
+                });
+                zip.file(design.filename, Buffer.from(response.data));
+            } catch (err) {
+                console.error(`Failed to fetch ${design.filename}:`, err.message);
+            }
+        }
+
+        const zipBuffer = await zip.generateAsync({
+            type: 'nodebuffer',
+            compression: 'DEFLATE',
+            compressionOptions: { level: 6 }
+        });
+
+        const zipFilename = `NEONTHREADS_${order.orderId || order._id}_Designs.zip`;
+
+        res.set({
+            'Content-Type': 'application/zip',
+            'Content-Disposition': `attachment; filename="${zipFilename}"`,
+            'Content-Length': zipBuffer.length
+        });
+
+        res.send(zipBuffer);
+    } catch (error) {
+        console.error('ZIP download error:', error.message);
+        res.status(500).json({ error: 'Failed to create ZIP file' });
     }
 };
 
@@ -409,5 +488,6 @@ module.exports = {
     sendManualWhatsApp,
     getOrderById,
     updatePaymentStatus,
-    proxyDownload
+    downloadImageProxy,
+    downloadZip
 };
