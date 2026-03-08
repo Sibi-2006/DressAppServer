@@ -25,6 +25,12 @@ const app = express();
 
 // Security Middleware
 app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "img-src": ["'self'", "data:", "res.cloudinary.com"],
+        },
+    },
     crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 

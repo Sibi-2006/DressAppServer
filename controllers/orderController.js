@@ -2,6 +2,33 @@ const Order = require('../models/orderModel');
 const { sendWhatsAppMessage } = require('../utils/whatsappService');
 const { generateOrderId, generateUPILink } = require('../utils/upiService');
 const { cloudinary } = require('../config/cloudinary');
+const axios = require('axios');
+
+// Proxy download for Cloudinary images (bypasses browser CORS)
+const proxyDownload = async (req, res) => {
+    try {
+        const { url, filename } = req.query;
+        if (!url) return res.status(400).json({ message: 'URL is required' });
+
+        const response = await axios.get(url, {
+            responseType: 'arraybuffer'
+        });
+
+        const contentType = response.headers['content-type'];
+        const fileNameToUse = filename || `design_${Date.now()}.png`;
+
+        res.set({
+            'Content-Type': contentType,
+            'Content-Disposition': `attachment; filename="${fileNameToUse}"`,
+            'Access-Control-Allow-Origin': '*'
+        });
+
+        res.send(response.data);
+    } catch (error) {
+        console.error('Proxy download failed:', error);
+        res.status(500).json({ message: 'Failed to download image' });
+    }
+};
 
 const deleteOrderImages = async (order) => {
     const publicIds = [];
@@ -164,7 +191,7 @@ const getMyOrders = async (req, res) => {
 };
 
 const getOrders = async (req, res) => {
-    const ordersRaw = await Order.find({}).populate('userId', 'id name email').sort({ createdAt: -1 }).lean();
+    const ordersRaw = await Order.find({}).populate('userId', 'id name email phone_number whatsapp_number').sort({ createdAt: -1 }).lean();
     const orders = ordersRaw.map(order => ({
         ...order,
         upiLink: order.payment && order.payment.status === 'PENDING' ? generateUPILink(order.orderId || order._id, order.payment.amount || order.totalPrice) : null
@@ -381,5 +408,6 @@ module.exports = {
     getAdminAnalytics,
     sendManualWhatsApp,
     getOrderById,
-    updatePaymentStatus
+    updatePaymentStatus,
+    proxyDownload
 };
