@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { getAdminAnalytics, sendManualWhatsApp, downloadImageProxy, downloadZip } = require('../controllers/orderController');
 const { getSettings, updateSettings, getNotificationLogs, testWhatsappMessage, getToastMessageSettings, updateToastMessageSettings } = require('../controllers/settingsController');
+const { getProducts, createProduct, updateProduct, deleteProduct } = require('../controllers/productController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
 router.route('/analytics').get(protect, admin, getAdminAnalytics);
@@ -12,5 +13,9 @@ router.route('/settings/notifications').get(protect, admin, getNotificationLogs)
 router.route('/settings/test-whatsapp').post(protect, admin, testWhatsappMessage);
 router.route('/orders/:id/whatsapp').post(protect, admin, sendManualWhatsApp);
 router.route('/toast-message').get(protect, admin, getToastMessageSettings).patch(protect, admin, updateToastMessageSettings);
+
+// Product Management
+router.route('/products').get(protect, admin, getProducts).post(protect, admin, createProduct);
+router.route('/products/:id').put(protect, admin, updateProduct).delete(protect, admin, deleteProduct);
 
 module.exports = router;
