@@ -15,7 +15,6 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const cartRoutes = require('./routes/cartRoutes');
-const seedProducts = require('./seeder');
 
 const { getToastMessage } = require('./controllers/settingsController');
 
@@ -104,13 +103,8 @@ if (!fs.existsSync(uploadDir)) {
 
 const connectDB = async () => {
     try {
-        if (!process.env.MONGO_URI) {
-            console.log("No MONGO_URI string provided. Provide in .env");
-        } else {
-            const conn = await mongoose.connect(process.env.MONGO_URI);
-            console.log(`MongoDB Connected: ${conn.connection.host}`);
-            seedProducts();
-        }
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('MongoDB Connected:', process.env.MONGODB_URI ? 'OK' : 'MISSING!');
     } catch (error) {
         console.error(`Error: ${error.message}`);
         process.exit(1);
