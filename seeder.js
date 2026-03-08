@@ -13,25 +13,25 @@ const products = [
         name: 'Classic T-Shirt',
         fit_type: 'NORMAL_FIT',
         price: 499,
-        colors: ['black', 'white', 'navy', 'grey'],
+        colors: ['Black', 'White', 'Skyblue', 'Purple'],
         sizes: ['S', 'M', 'L', 'XL', 'XXL'],
         description:
             'Premium quality normal fit t-shirt. ' +
             'Customize with your own design.',
         images: {
-            black: {
+            Black: {
                 front: '/assets/NORMAL_FIT/Normal_fit_Black_frontside.png',
                 back: '/assets/NORMAL_FIT/Normal_fit_Black_backside.png'
             },
-            white: {
+            White: {
                 front: '/assets/NORMAL_FIT/Normal_fit_White_frontside.png',
                 back: '/assets/NORMAL_FIT/Normal_fit_White_backside.png'
             },
-            navy: {
+            Skyblue: {
                 front: '/assets/NORMAL_FIT/Normal_fit_Skyblue_frontside.png',
                 back: '/assets/NORMAL_FIT/Normal_fit_Skyblue_backside.png'
             },
-            grey: {
+            Purple: {
                 front: '/assets/NORMAL_FIT/Normal_fit_Purple_frontside.png',
                 back: '/assets/NORMAL_FIT/Normal_fit_Purple_backside.png'
             }
@@ -46,29 +46,35 @@ const products = [
         name: 'Oversized Street Tee',
         fit_type: 'OVERSIZED_FIT',
         price: 699,
-        colors: ['black', 'white', 'grey'],
+        colors: ['Black', 'White', 'Skyblue', 'Purple'],
         sizes: ['S', 'M', 'L', 'XL', 'XXL'],
         description:
             'Premium quality oversized fit t-shirt. ' +
             'Customize with your own design.',
         images: {
-            black: {
+            Black: {
                 front:
                     '/assets/OVERSIZED_FIT/Oversized_fit_Black_frontside.png',
                 back:
                     '/assets/OVERSIZED_FIT/Oversized_fit_Black_backside.png'
             },
-            white: {
+            White: {
                 front:
                     '/assets/OVERSIZED_FIT/Oversized_fit_White_frontside.png',
                 back:
                     '/assets/OVERSIZED_FIT/Oversized_fit_White_backside.png'
             },
-            grey: {
+            Skyblue: {
                 front:
                     '/assets/OVERSIZED_FIT/Oversized_fit_Skyblue_frontside.png',
                 back:
                     '/assets/OVERSIZED_FIT/Oversized_fit_Skyblue_backside.png'
+            },
+            Purple: {
+                front:
+                    '/assets/OVERSIZED_FIT/Oversized_fit_Purple_frontside.png',
+                back:
+                    '/assets/OVERSIZED_FIT/Oversized_fit_Purple_backside.png'
             }
         },
         in_stock: true,
