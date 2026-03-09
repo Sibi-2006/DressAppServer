@@ -39,17 +39,26 @@ const allowedOrigins = [
     process.env.CLIENT_URL,
     'http://localhost:3000',
     'http://localhost:5173',
+    'http://localhost:8081',
+    'http://localhost:8082',
+    'http://localhost:8083',
+    'http://localhost:8084',
+    'http://localhost:19000',
+    'http://localhost:19006',
     'https://dressappclient.onrender.com',
     'https://neonthreads-custom.vercel.app'
 ].filter(Boolean);
 
 app.use(cors({
     origin: function (origin, callback) {
+        // Allow requests with no origin (mobile apps, curl, Postman)
         if (!origin) return callback(null, true);
-        const isAllowed = allowedOrigins.includes(origin) ||
+        const isAllowed =
+            allowedOrigins.includes(origin) ||
             origin.startsWith('http://192.168.') ||
             origin.startsWith('http://172.') ||
-            origin.startsWith('http://10.');
+            origin.startsWith('http://10.') ||
+            origin.startsWith('http://localhost:');
         if (isAllowed) callback(null, true);
         else callback(new Error('Not allowed by CORS: ' + origin));
     },
@@ -57,6 +66,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
+
 
 // Handle Preflight Requests
 app.options('/{*path}', cors());
